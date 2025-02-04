@@ -4,6 +4,8 @@ import { BackgroundLines } from "@/components/ui/background-lines";
 import { FlipWords } from "@/components/ui/flip-words";
 import Image from "next/image";
 
+const words = ["EventMinder", "prabh", "rashi", "sneha"];
+
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
@@ -22,7 +24,7 @@ export default function Home() {
       <BackgroundLines className=" flex flex-col items-center justify-center">
         <h1 className="text-4xl ">Welcome To</h1><br/>
         <h1 className="text-7xl "><span className={`${fontdinerSwanky.className} text-7xl dark:text-cyan-500 text-sky-500`}>Event</span>Minder</h1>
-        <FlipWords className="text-l  px-10" words={["EventMinder"]} />
+        <FlipWords className="text-l  px-10" words={words} />
       </BackgroundLines>
     </main>
     </div>
