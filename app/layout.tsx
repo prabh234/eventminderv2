@@ -1,7 +1,7 @@
+import Providers from "@/components/theme-provider";
 import type { Metadata } from "next";
 import "./globals.css";
-import Providers from "@/components/theme-provider";
-import { geistSans, geistMono } from "@/components/fonts";
+import Header from "@/components/assets/header";
 
 export const metadata: Metadata = {
   title: "EventMinder",
@@ -16,9 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark:text-gray-100 text-zinc-800 dark:bg-gray-900 bg-zinc-300`}
+        className={`antialiased flex flex-1 flex-col dark:text-gray-100 text-zinc-800 dark:bg-gray-900 bg-zinc-300`}
       >
         <Providers>
+          <Header/>
           {children}
         </Providers>
       </body>
