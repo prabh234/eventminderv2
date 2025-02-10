@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased flex flex-1 flex-col dark:text-gray-100 text-zinc-800 dark:bg-gray-900 bg-zinc-300`}
+        className={`antialiased flex flex-1 h-screen flex-col dark:text-gray-100 text-zinc-800 dark:bg-gray-900 bg-zinc-300`}
       >
         <Providers>
           <Header/>
