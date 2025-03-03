@@ -17,8 +17,8 @@ export default function Home() {
         <span className="text-lg" >StreamLine your events with <FlipWords className="text-lg" words={words} /></span><br/>
         <div className="relative">
         <div className="flex flex-row gap-2">
-          <Link href="/auth/register"><Button><UserRoundPlus/> Register</Button></Link>
-          <Link href="/auth/login"><Button><LogInIcon/> Log-In</Button></Link>
+          <Link href="/register"><Button><UserRoundPlus/> Register</Button></Link>
+          <Link href="/login"><Button><LogInIcon/> Log-In</Button></Link>
         </div>
         </div>
       </BackgroundLines>

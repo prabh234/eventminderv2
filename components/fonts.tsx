@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Love_Light, Yellowtail, Fontdiner_Swanky } from "next/font/google";
+import { Geist, Geist_Mono, Love_Light, Yellowtail, Fontdiner_Swanky, Playwrite_IT_Moderna } from "next/font/google";
 
 export const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,4 +26,8 @@ export const fontdinerSwanky = Fontdiner_Swanky({
   weight: ["400"],
   style: ["normal"],
   subsets: ["latin"],
+});
+export const PlayWriteItalia = Playwrite_IT_Moderna({
+  weight: ["400"],
+  style: ["normal"],
 });
