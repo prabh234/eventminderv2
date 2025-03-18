@@ -1,4 +1,4 @@
-import { fontdinerSwanky } from "@/components/fonts";
+import { fontdinerSwanky } from "@/components/assets/fonts";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import { Button } from "@/components/ui/button";
 import { FlipWords } from "@/components/ui/flip-words";

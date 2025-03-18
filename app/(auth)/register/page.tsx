@@ -1,4 +1,4 @@
-import { PlayWriteItalia } from "@/components/fonts";
+import { PlayWriteItalia } from "@/components/assets/fonts";
 import {
   Card,
   CardContent,

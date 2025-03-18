@@ -1,21 +1,21 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useState } from "react"
-
 import { Button } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
+import axios from "axios"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 const formSchema = z.object({
     email: z.string().email({
@@ -23,7 +23,7 @@ const formSchema = z.object({
     }),
     fname:z.string().nonempty("First name is required"),
     lname:z.string().nonempty("last name is required"),
-    department: z.string().nonempty("Department is required"),
+    dob:z.date(),
     password: z.string()
         .min(6, "Password must be at least 6 characters long")
         .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, "Password must contain at least one letter, one number, and one special character"),
@@ -47,25 +47,53 @@ export function HostForm() {
         email: "",
         password: "",
         confirmPassword: "",
-        department: "",
+        dob: new Date(),
     },
   })
 
   const [showPassword, setShowPassword] = useState(false)
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
+    try{
+      const res = await axios.post("/api/auth/register", {role:"moderator",...values})
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
   }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 min-w-[300px]">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 flex flex-col min-w-[300px]">
+        <div className="flex gap-2">
+          <FormField
+            control={form.control}
+            name="fname"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="First Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lname"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Last Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="abc@example.com" {...field} />
               </FormControl>
@@ -75,12 +103,16 @@ export function HostForm() {
         />
         <FormField
           control={form.control}
-          name="department"
+          name="dob"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Department</FormLabel>
               <FormControl>
-                <Input placeholder="Computer applications" {...field} />
+                <DatePicker
+                  startYear={1900}
+                  endYear={new Date().getFullYear()}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -91,7 +123,6 @@ export function HostForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
               <FormControl className="relative">
                 <div>
                 <Input
@@ -121,7 +152,6 @@ export function HostForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
               <FormControl className="relative">
                 <div>
                 <Input

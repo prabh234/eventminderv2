@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export default function LampDemo() {
   return (
-    <LampContainer>
+    <LampContainer className="-z-20 mt-20">
       <motion.h1
         initial={{ opacity: 0.5, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}

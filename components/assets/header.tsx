@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import React from 'react'
-import { ThemeSwitcher } from '../my-theme'
-import { fontdinerSwanky } from '../fonts'
+import { ThemeSwitcher } from './my-theme'
+import { fontdinerSwanky } from './fonts'
 import Link from 'next/link'
 
 export default function Header() {

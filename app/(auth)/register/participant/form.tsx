@@ -1,41 +1,29 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { useState } from "react"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {cn} from '@/lib/utils'
 import { Button } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
+import axios from "axios"
 
 const formSchema = z.object({
     email: z.string().email({
         message: "Please enter a valid email address.",
     }),
-    department: z.string().nonempty("Department is required"),
-    firstname: z.string().nonempty("First name is required"),
-    lastname: z.string().nonempty("Last name is required"),
-    dob: z.date({
-      required_error: "Date of birth is required"
-    }),
+    fname:z.string().nonempty("First name is required"),
+    lname:z.string().nonempty("last name is required"),
+    dob:z.date(),
     password: z.string()
         .min(6, "Password must be at least 6 characters long")
         .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, "Password must contain at least one letter, one number, and one special character"),
@@ -54,30 +42,61 @@ export function ParticipantForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstname:"",
-      lastname:"",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      department: "",
+        fname:"",
+        lname:"",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        dob: new Date(),
     },
   })
 
   const [showPassword, setShowPassword] = useState(false)
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
+    try{
+      const res = await axios.post("/api/auth/register", {role:"participant",...values})
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
   }
+
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 min-w-[300px]">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 flex flex-col min-w-[300px]">
+        <div className="flex gap-2">
+          <FormField
+            control={form.control}
+            name="fname"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="First Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lname"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Last Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="abc@example.com" {...field} />
               </FormControl>
@@ -89,54 +108,14 @@ export function ParticipantForm() {
           control={form.control}
           name="dob"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date of birth</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                Your date of birth is used to calculate your age.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="department"
-          render={({ field }) => (
             <FormItem>
-              <FormLabel>Department</FormLabel>
               <FormControl>
-                <Input placeholder="Computer applications" {...field} />
+                <DatePicker
+                  startYear={1900}
+                  endYear={new Date().getFullYear()}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -147,7 +126,6 @@ export function ParticipantForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
               <FormControl className="relative">
                 <div>
                 <Input
@@ -177,7 +155,6 @@ export function ParticipantForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
               <FormControl className="relative">
                 <div>
                 <Input

@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id              Int          @id @default(autoincrement())
+  fname           String       @db.VarChar(150)
+  lname           String       @db.VarChar(150)
+  password        String?
+  email           String       @unique @db.VarChar(120)
+  department      String?
+  role            Role         @default(Participant)
+  dateofbirth     String
+  emailVerifToken String?      @db.VarChar(255)
+  googleId        String?      @unique
+  isGoogleAuth    Boolean      @default(false)
+  profile_pic     String?
+  enrollments     Enrollment[]
+}
+
+model Moderator {
+  id              Int     @id @default(autoincrement())
+  fname           String  @db.VarChar(150)
+  lname           String  @db.VarChar(150)
+  password        String?
+  email           String  @unique @db.VarChar(120)
+  role            Role    @default(Moderator)
+  dateofbirth     String
+  department      String?
+  emailVerifToken String? @db.VarChar(255)
+  googleId        String? @unique
+  isGoogleAuth    Boolean @default(false)
+  profile_pic     String?
+  events          Event[]
+}
+
+model Event {
+  id          Int          @id @unique @default(autoincrement())
+  eventname   String
+  description String
+  startdt     String
+  enddt       String
+  hostId      Int
+  status      Boolean      @default(false)
+  enrollments Enrollment[]
+  host        Moderator    @relation(fields: [hostId], references: [id])
+}
+
+model Enrollment {
+  id        Int         @id @unique @default(autoincrement())
+  eventId   Int
+  studentId Int
+  status    Boolean     @default(false)
+  event     Event       @relation(fields: [eventId], references: [id])
+  attendee  Participant @relation(fields: [studentId], references: [id])
+}
+
+enum Role {
+  Participant
+  Moderator
+  Admin
+}
