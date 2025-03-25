@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/assets/header";
 import { SessionProvider } from "@/components/assets/SessionProvider"
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "EventMinder",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <Providers>
             <Header/>
             {children}
+            <Toaster/>
           </Providers>
         </SessionProvider>
       </body>

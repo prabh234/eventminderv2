@@ -8,6 +8,7 @@ import Link from "next/link";
 const words = ["Efficiency", "Precision", "Simplicity", "Control", "Ease"];
 
 export default function Home() {
+
   return (
     <div className="flex flex-1 flex-col">
     <main className="relative">

@@ -1,8 +1,8 @@
 import { MyPrisma } from "@/prisma/prisma"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { compare } from "bcryptjs"
 import NextAuth, { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { compare } from "bcryptjs"
 
  export const options:NextAuthOptions = {
   adapter: PrismaAdapter(MyPrisma),
@@ -12,10 +12,10 @@ import { compare } from "bcryptjs"
       id: 'credentials',
       name: 'Credentials',
       credentials: {
-        email: {label: "Email", type: "email"},
-        password: {label: "Password", type: "password"}
+        email: {},
+        pasword: {}
       },
-      async authorize(credentials: Record<"password" | "email", string> | undefined): Promise<{ id: string, email: string, role:string } | null>{
+      async authorize(credentials: Record<"pasword" | "email", string> | undefined): Promise<{ id: string, role: string, email: string, name?: string, image?: string } | null>{
         try {
           if (!credentials) {
             return null
@@ -30,38 +30,55 @@ import { compare } from "bcryptjs"
             }
           })
           if (!user) {
+            console.log("if runed")
             throw new Error("User not found")
+          } else if(user.password){
+            const usp =  user.password;
+            const csp =  credentials.pasword;
+             const compared =await compare(csp,usp)
+            console.log(usp + " " + csp);
+            if (compared) {
+              console.log("if password runed")
+              return { ...user, id: user.id.toString(), role: user.role.toString() }
+            } else {
+              console.log("els password runed")
+              throw new Error("Password incorrect")
+            }
           }
-          const isPasswordCorrect = await compare(credentials.password, user.password)
-          if (isPasswordCorrect) {
-            return {id: user.id.toString(), email: user.email, role: user.role}
-          } else {
-            throw new Error("Password incorrect")
-          }
-        } catch (error) {
-          console.log(error)
-          throw new Error("An error occurred" + error)
+          return null;
+        } catch (err) {
+            console.log("catch runed")
+          console.log(err)
+          throw new Error("" + err)
         }
       }
-  })
+    })
   ],
  pages:{
-  signIn: "/auth/signin",
-  signOut: "/auth/signout",
+  signIn: "/login",
+  signOut: "logout",
  },
   session:{
     strategy: "jwt",
   },
   callbacks:{
-    async jwt(token, user){
+    async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
+        token.id = user.id;
+        token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image;
       }
-      return token
+      return token;
     },
-    async session(session, token){
-      session.id = token.id
-      return session
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.email = token.email;
+      session.user.name = token.name;
+      session.user.image = token.image;
+      return session;
     }
   }
 

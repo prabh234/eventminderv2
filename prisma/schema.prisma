@@ -8,44 +8,48 @@ datasource db {
 }
 
 model Participant {
-  id              Int          @id @default(autoincrement())
+  id              String       @id @default(uuid())
   fname           String       @db.VarChar(150)
   lname           String       @db.VarChar(150)
   password        String?
   email           String       @unique @db.VarChar(120)
   department      String?
   role            Role         @default(Participant)
-  dateofbirth     String
+  dateofbirth     DateTime
   emailVerifToken String?      @db.VarChar(255)
-  googleId        String?      @unique
-  isGoogleAuth    Boolean      @default(false)
+  isVarified      Boolean      @default(false)
   profile_pic     String?
+  resetExpire     DateTime?
+  resetPassword   String?
+  verifiedExpire  DateTime?
   enrollments     Enrollment[]
 }
 
 model Moderator {
-  id              Int     @id @default(autoincrement())
-  fname           String  @db.VarChar(150)
-  lname           String  @db.VarChar(150)
+  id              String    @id @default(uuid())
+  fname           String    @db.VarChar(150)
+  lname           String    @db.VarChar(150)
   password        String?
-  email           String  @unique @db.VarChar(120)
-  role            Role    @default(Moderator)
-  dateofbirth     String
+  email           String    @unique @db.VarChar(120)
+  role            Role      @default(Moderator)
+  dateofbirth     DateTime
   department      String?
-  emailVerifToken String? @db.VarChar(255)
-  googleId        String? @unique
-  isGoogleAuth    Boolean @default(false)
+  emailVerifToken String?   @db.VarChar(255)
+  isVarified      Boolean   @default(false)
   profile_pic     String?
+  resetExpire     DateTime?
+  resetPassword   String?
+  verifiedExpire  DateTime?
   events          Event[]
 }
 
 model Event {
-  id          Int          @id @unique @default(autoincrement())
+  id          String       @id @unique @default(uuid())
   eventname   String
   description String
   startdt     String
   enddt       String
-  hostId      Int
+  hostId      String
   status      Boolean      @default(false)
   enrollments Enrollment[]
   host        Moderator    @relation(fields: [hostId], references: [id])
@@ -53,8 +57,8 @@ model Event {
 
 model Enrollment {
   id        Int         @id @unique @default(autoincrement())
-  eventId   Int
-  studentId Int
+  eventId   String
+  studentId String
   status    Boolean     @default(false)
   event     Event       @relation(fields: [eventId], references: [id])
   attendee  Participant @relation(fields: [studentId], references: [id])

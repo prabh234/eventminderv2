@@ -1,12 +1,11 @@
-import { PlayWriteItalia } from '@/components/assets/fonts';
-import { LoginForm } from '@/components/ui/formvalidation/schema'
-import React from 'react'
+'use client'
+import { LoginForm } from '@/components/ui/formvalidation/schema';
 
 const Page = () => {
   return (
     <div className="flex flex-1 flex-col w-full h-screen items-center justify-center">
-        <h1 className={`text-6xl ${PlayWriteItalia.className}`}>Login</h1>
-        <LoginForm/>
+      <h1 className={`text-6xl `}>Login</h1>
+      <LoginForm/>
     </div>
   )
 }

@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { toast } from "sonner"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
   email: z.string().email({
@@ -27,6 +30,7 @@ const formSchema = z.object({
 })
 
 export function LoginForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,24 +42,25 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      })
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok')
-      }
-
-      const data = await response.json()
-      console.log(data)
-    } catch (error) {
-      console.error('There was a problem with the fetch operation:', error)
-    }
+    const response = await signIn('credentials',{
+            email:values.email,
+            pasword:values.password,
+            redirect:false
+        },{
+        })
+        console.log(response?.error);
+        
+        if(response?.error && response?.error === "Error: Password incorrect"){
+            toast.error("password is incorrect")
+        }else if(response?.error){
+            toast.error("user does not exist")
+            router.push("/register")
+            router.refresh()
+        }else{
+            toast.success("login successful")
+            router.push("/")
+            router.refresh()
+        }
   }
   return (
     <Form {...form}>

@@ -1,7 +1,7 @@
-import { PlayWriteItalia } from "@/components/assets/fonts";
-import { HostForm } from "./form";
-import Image from "next/image";
+import { Phiolosopher } from "@/components/assets/fonts";
 import { Meteors } from "@/components/ui/meteors";
+import Image from "next/image";
+import { HostForm } from "./form";
 
 export default function Host() {
   return (
@@ -11,7 +11,7 @@ export default function Host() {
         <Meteors/>
       </div>
       <div className="flex flex-1 items-center flex-col gap-10">
-        <h1 className={`text-6xl ${PlayWriteItalia.className}`} >Moderator</h1>
+        <h1 className={`text-6xl ${Phiolosopher.className}`} >Moderator</h1>
         <HostForm/>
       </div>
     </div>

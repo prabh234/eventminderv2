@@ -16,6 +16,8 @@ import axios from "axios"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const formSchema = z.object({
     email: z.string().email({
@@ -39,6 +41,7 @@ const formSchema = z.object({
 })
 
 export function HostForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,10 +57,17 @@ export function HostForm() {
   const [showPassword, setShowPassword] = useState(false)
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try{
-      const res = await axios.post("/api/auth/register", {role:"moderator",...values})
-      console.log(res)
+      await axios.post("/api/auth/register", {role:"moderator",...values})
+      router.push("/register/verify");
+      toast.success("Registration successful")
     } catch (error) {
-      console.log(error)
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        toast.error("User already exists login")
+        router.push("/login")
+        router.refresh()
+      } else{
+        toast.error("Something went wrong, try again")
+      }
     }
   }
   return (

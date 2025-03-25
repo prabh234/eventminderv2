@@ -1,3 +1,4 @@
+import { sendMail } from "@/lib/mailer";
 import { MyPrisma } from "@/prisma/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,7 +23,7 @@ export const POST = async (request: NextRequest) => {
             if (body.role === "moderator") {
                 try {
                     const hash = await bcrypt.hashSync(body.password, 10)
-                    await MyPrisma.moderator.create({
+                    const {email,id,role} = await MyPrisma.moderator.create({
                         data: {
                             email: body.email.toLowerCase(),
                             password: hash,
@@ -31,6 +32,7 @@ export const POST = async (request: NextRequest) => {
                             dateofbirth: body.dob,
                         }
                     })
+                    await sendMail({email:email,UserId:id,emailType:"verify",role:role})
                     return NextResponse.json({message:"Registration Successful"},{status:201})
                 } catch (error) {
                     return NextResponse.json({message: "Something went wrong, try again", error},{status:302,statusText:"error yaha hai"})
@@ -39,7 +41,7 @@ export const POST = async (request: NextRequest) => {
             } else if (body.role === "participant") {
                 try {
                     const hash = await bcrypt.hashSync(body.password, 10)
-                    await MyPrisma.participant.create({
+                    const {email,id,role}= await MyPrisma.participant.create({
                     data: {
                         email: body.email,
                         password: hash,
@@ -48,6 +50,7 @@ export const POST = async (request: NextRequest) => {
                         dateofbirth: body.dob,
                     }
                 })
+                    await sendMail({email:email,UserId:id,emailType:"verify",role:role})
                     return NextResponse.json({message:"Registration Successful"},{status:201})
                 } catch (error) {
                     return NextResponse.json({message:"Something went wrong, try again",error},{status:302,statusText:"error yaha hai"})
