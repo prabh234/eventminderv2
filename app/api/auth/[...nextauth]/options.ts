@@ -15,7 +15,7 @@ import Credentials from "next-auth/providers/credentials"
         email: {},
         pasword: {}
       },
-      async authorize(credentials: Record<"pasword" | "email", string> | undefined): Promise<{ id: string, role: string, email: string, name?: string, image?: string } | null>{
+      async authorize(credentials: Record<"pasword" | "email", string> | undefined): Promise<{ name: string; id: string; role: string; email: string } | null>{
         try {
           if (!credentials) {
             return null
@@ -39,7 +39,7 @@ import Credentials from "next-auth/providers/credentials"
             console.log(usp + " " + csp);
             if (compared) {
               console.log("if password runed")
-              return { ...user, id: user.id.toString(), role: user.role.toString() }
+              return {...user, name: (user.fname + " " + user.lname) || "", id: user.id.toString(), role: user.role.toString(), email: user.email}
             } else {
               console.log("els password runed")
               throw new Error("Password incorrect")
@@ -64,8 +64,11 @@ import Credentials from "next-auth/providers/credentials"
   callbacks:{
     async jwt({ token, user }) {
       if (user) {
+        console.log(user);
+        
         token.id = user.id;
         token.role = user.role;
+        token.name = user.name
         token.email = user.email;
         token.name = user.name;
         token.image = user.image;

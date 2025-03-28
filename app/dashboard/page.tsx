@@ -1,13 +1,10 @@
-'use client'
 
-import { useSession } from 'next-auth/react'
-import React from 'react'
+import { CardDashboard } from "@/components/ui/my-components/dashboard-cards";
 
-const Dashboard = () => {
-  const {data:session} = useSession()
+export default function Page() {
   return (
-    <div>{JSON.stringify(session?.user)}</div>
-  )
+        <main className=" ">
+          <CardDashboard/>
+        </main>
+    )
 }
-
-export default Dashboard

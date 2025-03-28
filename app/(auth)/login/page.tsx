@@ -1,5 +1,6 @@
 'use client'
-import { LoginForm } from '@/components/ui/formvalidation/schema';
+
+import { LoginForm } from "./form";
 
 const Page = () => {
   return (

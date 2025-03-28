@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, Loader, UserPlus } from "lucide-react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -25,20 +25,16 @@ const formSchema = z.object({
     }),
     fname:z.string().nonempty("First name is required"),
     lname:z.string().nonempty("last name is required"),
-    dob:z.date(),
-    password: z.string()
+  dob: z.date().refine(date => {
+    const age = new Date().getFullYear() - date.getFullYear();
+    return age >= 15;
+  }, {
+    message: "You must be at least 15 years old.",
+  }),
+  password: z.string()
         .min(6, "Password must be at least 6 characters long")
         .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, "Password must contain at least one letter, one number, and one special character"),
-        confirmPassword: z.string(),
-    }).superRefine((values, ctx) => {
-        if (values.password !== values.confirmPassword) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Passwords do not match",
-                path: ["confirmPassword"],
-            });
-        }
-})
+      })
 
 export function ParticipantForm() {
   const router = useRouter()
@@ -49,27 +45,30 @@ export function ParticipantForm() {
         lname:"",
         email: "",
         password: "",
-        confirmPassword: "",
         dob: new Date(),
     },
   })
 
   const [showPassword, setShowPassword] = useState(false)
-
+  const [loading,setLoading] = useState(false);
   async function onSubmit(values: z.infer<typeof formSchema>) {
+      setLoading(true)
     try{
       await axios.post("/api/auth/register", {role:"participant",...values})
+      setLoading(false)
       router.push('/register/verify')
       router.refresh()
     } catch (error) {
       if(axios.isAxiosError(error) &&  error.response?.status === 400){
+      setLoading(false)
         toast.error("User already exists")
         router.push('/login')
         router.refresh()
       } else {
+      setLoading(false)
         toast.error("Something went wrong, try again")
         router.refresh()
-      }    
+      }
     }
   }
 
@@ -161,36 +160,7 @@ export function ParticipantForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl className="relative">
-                <div>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  {...field}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOffIcon className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
+        <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin" />loading...</span>:<span className="flex gap-2"><UserPlus />Register</span>}</Button>
       </form>
     </Form>
   )

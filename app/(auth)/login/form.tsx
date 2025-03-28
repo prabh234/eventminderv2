@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, Loader, LogIn } from "lucide-react"
 import { toast } from "sonner"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -25,9 +25,7 @@ const formSchema = z.object({
     message: "Please enter a valid email address.",
   }),
   password: z.string()
-    .min(6, "Password must be at least 6 characters long")
-    .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, "Password must contain at least one letter, one number, and one special character"),
-})
+  })
 
 export function LoginForm() {
   const router = useRouter();
@@ -40,23 +38,27 @@ export function LoginForm() {
   })
 
   const [showPassword, setShowPassword] = useState(false)
+  const [loading,setLoading] = useState(false)
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true)
     const response = await signIn('credentials',{
             email:values.email,
             pasword:values.password,
             redirect:false
-        },{
         })
         console.log(response?.error);
         
         if(response?.error && response?.error === "Error: Password incorrect"){
+            setLoading(false)
             toast.error("password is incorrect")
         }else if(response?.error){
+            setLoading(false)
             toast.error("user does not exist")
             router.push("/register")
             router.refresh()
         }else{
+        setLoading(false)
             toast.success("login successful")
             router.push("/")
             router.refresh()
@@ -108,7 +110,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin"/>Loading...</span>:<span className="flex gap-2"><LogIn/>Log-in</span>}</Button>
       </form>
     </Form>
   )
