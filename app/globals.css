@@ -26,3 +26,8 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+
+.my-background-image {
+  background-image: url("/inspiration-geometry.png");
+}
