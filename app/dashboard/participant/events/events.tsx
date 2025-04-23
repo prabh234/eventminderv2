@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BiDotsVerticalRounded } from "react-icons/bi";
-export default function EventCratedCards(){
+export default function EventCards(){
     interface Event {
         id: string;
         eventname: string;
@@ -14,12 +14,13 @@ export default function EventCratedCards(){
         enddt:string;
     }
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
     const [events, setEvents] = useState<Event[]>([])
     const GetEvents = useCallback(async () => {
         try{
-        const events = await axios.post("/api/moderator/event");
-            setEvents(events.data.res);
+        const events = await axios.get("/api/participant/event");
+        setEvents(events.data.res);
+        console.log(events);
+        
         } catch(err){
             console.log(err);
         }
@@ -28,13 +29,12 @@ export default function EventCratedCards(){
     useEffect(() => {
         GetEvents();
     }, [GetEvents]);
-    return(
-
-        <div className="grid grid-cols-1 md:grid-cols-3  lg:grid-cols-4 py-10">
-
-            {events.length > 0 ? events.map((event,idx)=>{
-                return(
-                    <div
+    return (
+        <>
+        {events.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3  lg:grid-cols-4 py-10">
+                    {events.map((event, idx) => (
+                       <div
                         key={idx}
                         className="relative group  block p-2 h-full w-full"
                         onMouseEnter={() => setHoveredIndex(idx)}
@@ -60,16 +60,18 @@ export default function EventCratedCards(){
                         <CardHeader className="text-4xl">{event.eventname}</CardHeader>
                         <CardContent>{event.description.length > 100 ? event.description.slice(0,100) + "..." : event.description}</CardContent>
                         <CardFooter className="flex justify-end items-center">
-                            <Link className="flex gap-1 items-center bg-sky-600 hover:bg-sky-500 pl-3 pr-2 rounded-md py-1" href={`/dashboard/moderator/events/${event.id}`}>Edit<BiDotsVerticalRounded/></Link>
+                            <Link className="flex gap-1 items-center bg-emerald-400 hover:bg-emerald-500 pl-3 pr-2 rounded-md py-1" href={`/dashboard/participant/events/${event.id}`}>View More<BiDotsVerticalRounded/></Link>
                         </CardFooter>
                     </Card>
                     </div>
-                )
-            }):(
-                <div className="">
-                    <h1 className="">No Events Created yet</h1>
+                    ))}
                 </div>
-            )}
-        </div>
-        )
+        ):(
+            <div className="flex justify-center items-center">
+
+                <h1 className="text-2xl font-bold">No Events Available</h1>
+            </div>
+        )}
+        </>
+    )
 }

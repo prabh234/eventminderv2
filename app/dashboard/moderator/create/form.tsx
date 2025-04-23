@@ -68,7 +68,7 @@ async function onSubmit(values: z.infer<typeof formSchema>) {
     const res = await axios.post("/api/moderator/event/create", { ...values, userId: session.user.id });
     setLoading(false);
     console.log(res);
-    router.refresh();
+    router.push("/dashboard/moderator/events");
     toast.success("Event has been created successfully");
   } catch (error) {
     setLoading(false);
@@ -146,7 +146,7 @@ async function onSubmit(values: z.infer<typeof formSchema>) {
             </FormItem>
           )}
         />
-        <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin" />loading...</span>:<span className="flex gap-2"><UserPlus />Register</span>}</Button>
+        <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin" />loading...</span>:<span className="flex gap-2"><UserPlus />Create</span>}</Button>
       </form>
     </Form>
         </div>

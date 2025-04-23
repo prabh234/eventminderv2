@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ThemeSwitcher } from '../../components/assets/my-theme';
 import { AppSidebar } from "@/components/app-sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function DashboardLayout({
   children,
@@ -21,7 +22,9 @@ export default function DashboardLayout({
             <ThemeSwitcher/>
           </div>
         </header>
-            {children}
+          <ScrollArea className="h-full w-full">
+              {children}
+          </ScrollArea>
         </SidebarInset>
     </SidebarProvider>
   

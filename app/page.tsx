@@ -15,7 +15,7 @@ export default function Home() {
     <main className="">
       <div className="overflow-clip flex items-center justify-center flex-col py-32 ">
     <Vortex
-      backgroundColor="#002a4505"
+      backgroundColor="#002a4500"
       className="flex items-center justify-center flex-col "
       particleCount={300}
       baseRadius={3}

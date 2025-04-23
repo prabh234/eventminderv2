@@ -19,6 +19,7 @@ import { EyeIcon, EyeOffIcon, Loader, LogIn } from "lucide-react"
 import { toast } from "sonner"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 const formSchema = z.object({
   email: z.string().email({
@@ -65,8 +66,9 @@ export function LoginForm() {
         }
   }
   return (
+   
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-80 flex flex-col">
         <FormField
           control={form.control}
           name="email"
@@ -95,7 +97,7 @@ export function LoginForm() {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -110,8 +112,10 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        <p className="text-xs"><Link className="hover:text-blue-400" href={"/forgot"}>Forgot Password?</Link></p>
         <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin"/>Loading...</span>:<span className="flex gap-2"><LogIn/>Log-in</span>}</Button>
       </form>
     </Form>
+    
   )
 }
