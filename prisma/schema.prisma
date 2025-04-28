@@ -16,6 +16,8 @@ model Participant {
   department      String?
   role            Role         @default(Participant)
   dateofbirth     DateTime
+  Face            Float[]
+  FaceRegistered Boolean @default(false)
   emailVerifToken String?      @db.VarChar(255)
   isVarified      Boolean      @default(false)
   profile_pic     String?

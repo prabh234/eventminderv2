@@ -65,12 +65,10 @@ import Credentials from "next-auth/providers/credentials"
     async jwt({ token, user }) {
       if (user) {
         console.log(user);
-        
         token.id = user.id;
         token.role = user.role;
         token.name = user.name
         token.email = user.email;
-        token.name = user.name;
         token.image = user.image;
       }
       return token;

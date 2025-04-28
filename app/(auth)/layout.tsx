@@ -6,9 +6,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <div className="min-h-screen justify-center my-background-image flex flex-col flex-1">
         <Header/>
-        {children}
+          {children}
      </div>
   );
 }

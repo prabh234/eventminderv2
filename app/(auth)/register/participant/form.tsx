@@ -1,9 +1,5 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { DatePicker } from "@/components/ui/date-picker"
 import {
@@ -14,10 +10,14 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { EyeIcon, EyeOffIcon, Loader, UserPlus } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
+import { EyeIcon, EyeOffIcon, Loader, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { z } from "zod"
 
 const formSchema = z.object({
     email: z.string().email({
@@ -163,5 +163,6 @@ export function ParticipantForm() {
         <Button disabled={loading} type="submit">{loading?<span className="flex gap-2"><Loader className="animate-spin" />loading...</span>:<span className="flex gap-2"><UserPlus />Register</span>}</Button>
       </form>
     </Form>
+    
   )
 }

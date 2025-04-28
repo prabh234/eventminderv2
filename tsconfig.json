@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types":["@tensorflow/tfjs","face-api.js"],
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
