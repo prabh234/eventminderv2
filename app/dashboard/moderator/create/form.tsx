@@ -78,12 +78,12 @@ async function onSubmit(values: z.infer<typeof formSchema>) {
 }
   return (
 <div className="flex items-center justify-center">
-      <div className="relative w-full max-w-[20rem]">
+      <div className="relative w-full max-w-[500px]">
         <div className="absolute inset-0 h-full w-full scale-[1] transform rounded-full bg-red-500/50 bg-gradient-to-r from-blue-500/40 to-teal-500/50 blur-3xl" />
         <div className="relative flex flex-1  h-full flex-col items-center  overflow-hidden rounded-2xl border border-gray-800 py-8 shadow-xl">
 
       <Form {...form} >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 flex flex-col" >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 flex flex-col w-full max-w-md px-4" >
           <FormField
             control={form.control}
             name="title"

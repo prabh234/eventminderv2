@@ -5,10 +5,29 @@ import { NextRequest, NextResponse } from 'next/server';
 // interface RegisterRequest {
 //   descriptor: Float32Array[];
 // }
-export const GET = async () => {
-  const data = MyPrisma.participant.findMany({
+export const GET = async (req:NextRequest) => {
+  const token = await getToken({req})
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+    try {
+  const data = await MyPrisma.participant.findFirst({
+    where:{
+      id:token.id
+    },
+    select:{
+      Face:true,
+      FaceRegistered:true
+    }
   })
-  return NextResponse.json(data)
+  return NextResponse.json({...data},{status:200})
+    } catch (error) {
+  return NextResponse.json(error,{status:500})
+    }
 }
 
 export async function POST(req: NextRequest) {
@@ -22,13 +41,23 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
+    const IsFaceRegistered = await MyPrisma.participant.findFirst({
+      where:{
+        id:token?.id
+      },
+      select:{
+        FaceRegistered:true
+      }
+    })
+    console.log(IsFaceRegistered);
+    if(IsFaceRegistered?.FaceRegistered) return NextResponse.json("face already registered",{status:302})
+    try {
     const face = await MyPrisma.participant.update({
       where:{
         id:token?.id
       },
       data: {
-        Face:data,
+        Face:data.descriptor,
         FaceRegistered:{
           set:true
         }
@@ -36,6 +65,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({face},{status:200});
+    } catch (error) {
+      return NextResponse.json(error,{status:500,statusText:"face registration failed"})
+    }
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

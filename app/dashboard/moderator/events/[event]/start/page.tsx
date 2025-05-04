@@ -1,16 +1,11 @@
-"use client";
-import { useState,useEffect } from 'react';
+import FaceAndQrRecognizer from "@/components/assets/faceandqr";
 
-export default function Start() {
-    const [eventid, setEventId] = useState<string | null>(null);
-    useEffect(function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const eventid = urlParams.get('eventid');
-        setEventId(eventid);
-    }, [eventid]);
+
+export default function Start({params}:{params:{event:string}}) {
   return (
-    <div>
-        <h1 className="text-4xl">{eventid}</h1>
-    </div>
+    <main className="p-10 flex flex-1 gap-5">
+        <h1 className="text-4xl">{params.event}</h1>
+        <FaceAndQrRecognizer eventid={params.event}/>
+    </main>
   )
 }

@@ -31,3 +31,146 @@ body {
 .my-background-image {
   background-image: url("/inspiration-geometry.png");
 }
+
+.video-wrapper {
+  position: relative;
+  width: 640px;
+  height: 480px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+/* Remove mirror-mode class and add these styles */
+video {
+  transform: scaleX(-1);
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.overlay-canvas {
+  transform: scaleX(-1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.recognizer-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.mode-toggle button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f0f0f0;
+  transition: all 0.2s;
+}
+
+.mode-toggle button.active {
+  background: #0070f3;
+  color: white;
+}
+
+.video-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.results-panel {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f8f8;
+  border-radius: 12px;
+}
+
+.result-item, .qr-content {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.no-result, .scan-prompt {
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+/* Keep other existing styles from previous CSS */
+.instruction-box {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(0,0,0,0.7);
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+}
+
+.register-btn {
+  background: #0070f3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.register-btn.active:hover {
+  background: #0051a2;
+}
+
+.register-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.recognizer-container {
+  @apply flex flex-col items-center gap-6 p-4 max-w-4xl mx-auto;
+}
+
+.mode-toggle {
+  @apply flex gap-4 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg;
+}
+
+.mode-toggle button {
+  @apply px-4 py-2 rounded-md transition-colors;
+}
+
+.mode-toggle button.active {
+  @apply bg-blue-600 text-white;
+}
+
+.results-panel {
+  @apply w-full bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg;
+}

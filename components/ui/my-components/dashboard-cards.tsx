@@ -7,8 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 const ModeratorData = [
     {
         title: "Total Events",
@@ -53,30 +51,11 @@ const ParticipantData = [
         count:5
     },
 ];
-export function CardDashboard() {
-const {data:session} = useSession();
-
-const [counts, setCounts] = useState<number[]>([]);
-
-useEffect(() => {
-    const targetCounts = session?.user.role === "Moderator" ? ModeratorData.map(card => card.count) : ParticipantData.map(card => card.count);
-    const initialCounts = new Array(targetCounts.length).fill(0);
-    setCounts(initialCounts);
-
-    const interval = setInterval(() => {
-        setCounts(prevCounts => 
-            prevCounts.map((count, index) => 
-                count < targetCounts[index] ? count + 1 : count
-            )
-        );
-    }, 10);
-
-    return () => clearInterval(interval);
-}, [session]);
+export function CardDashboardModerator() {
 
 return (
     <div className="flex gap-5 px-5 justify-around">
-        {session?.user.role === "Moderator"? ModeratorData.map((card, index) => (
+        {ModeratorData.map((card, index) => (
             <Card key={index} className="w-auto dark:bg-sky-400 bg-sky-400 dark:text-sky-800 text-sky-50">
                 <CardHeader>
                     <CardTitle>{card.title}</CardTitle>
@@ -86,12 +65,20 @@ return (
                     <CardDescription className="dark:text-slate-700 text-slate-200">{card.description}</CardDescription>
                 </CardFooter>
             </Card>
-        )):ParticipantData.map((card, index) => (
+        ))}
+    </div>
+);
+}
+export function CardDashboardParticipant() {
+
+return (
+    <div className="flex gap-5 px-5 justify-around">
+        {ParticipantData.map((card, index) => (
             <Card key={index} className="w-auto dark:bg-sky-400 bg-sky-400 dark:text-sky-800 text-sky-50">
                 <CardHeader>
                     <CardTitle>{card.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="dark:text-gray-200 text-gray-800 text-5xl font-bold">{counts[index]}</CardContent>
+                <CardContent className="dark:text-gray-200 text-gray-800 text-5xl font-bold">{card.count}</CardContent>
                 <CardFooter className="flex justify-between">
                     <CardDescription className="dark:text-slate-700 text-slate-200">{card.description}</CardDescription>
                 </CardFooter>

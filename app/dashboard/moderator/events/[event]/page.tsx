@@ -86,7 +86,7 @@ export default function Event({ params }: { params: Promise<{ event: string }> }
     function handleStart(){
         toast.success(date);
         if (date === "today"){
-            router.push(`/dashboard/moderator/events/${eventid}/start?eventid=${eventid}`);
+            router.push(`/dashboard/moderator/events/${eventid}/start`);
         } else{
             toast.error("Event cannot be started", {
                 description: "Event can only be started on the date selected",

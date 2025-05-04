@@ -2,98 +2,142 @@
 import { useEffect, useRef, useState } from 'react';
 import * as faceapi from 'face-api.js';
 import axios from 'axios';
-import { Button } from '../ui/button';
-
-// interface FaceDescriptor {
-//   descriptor: Float32Array;
-// }
-
-// interface FaceRegisterProps {
-//   onRegister: (descriptors: FaceDescriptor[]) => void;
-// }
 
 const FaceRegister = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'registering' | 'error'>('loading');
+  const [message, setMessage] = useState('Initializing face detection...');
+  const detectionInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Load models and initialize camera
-useEffect(() => {
-  let stream: MediaStream | null = null;
-  let interval: NodeJS.Timeout | null = null;
-  let videoElement: HTMLVideoElement | null = null;
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    
+    const initializeFaceDetection = async () => {
+      try {
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+          faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+          faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+        ]);
 
-  const loadModels = async () => {
-    try {
-      setLoading(false)
-      await Promise.all([
-        faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
-        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-      ]);
-      stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-      videoElement = videoRef.current;
-      if (videoElement) {
-        videoElement.srcObject = stream;
-        await new Promise((resolve) => {
-          videoElement!.onloadedmetadata = resolve;
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user' } 
         });
-        // Store interval reference locally
-        interval = setInterval(async () => {
-          // Detection logic here
-        }, 100);
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await new Promise(resolve => {
+            videoRef.current!.onloadedmetadata = resolve;
+          });
+          
+          // Start face detection loop
+          detectionInterval.current = setInterval(detectFace, 100);
+          setStatus('ready');
+          setMessage('Position your face in the frame');
+        }
+      } catch (err) {
+        setStatus('error');
+        setMessage(`Error: ${err instanceof Error ? err.message : 'Failed to initialize'}`);
       }
-    } catch (err) {
-      setError('Error accessing camera or loading models' + err);
-      setLoading(false);
+    };
+
+    initializeFaceDetection();
+
+    return () => {
+      if (detectionInterval.current) {
+        clearInterval(detectionInterval.current);
+      }
+      stream?.getTracks().forEach(track => track.stop());
+    };
+  }, []);
+
+  const detectFace = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const detection = await faceapi
+      .detectSingleFace(videoRef.current)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (detection) {
+      // Draw face detection box
+      const dims = faceapi.matchDimensions(canvas, videoRef.current, true);
+      const resizedDetection = faceapi.resizeResults(detection, dims);
+      faceapi.draw.drawDetections(canvas, resizedDetection);
     }
   };
-
-  loadModels();
-
-  return () => {
-    // Use locally captured values for cleanup
-    if (interval) clearInterval(interval);
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-    if (videoElement) {
-      videoElement.srcObject = null;
-    }
-  };
-}, []);
-
 
   const handleRegister = async () => {
-    if ( !videoRef.current){console.log("runned");
-     return};
+    if (!videoRef.current) return;
 
-    const detections = await faceapi
-      .detectAllFaces(videoRef.current)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+    setStatus('registering');
+    setMessage('Capturing face data...');
 
-    if (detections.length === 0) {
-      alert('No face detected');
-      return;
+    try {
+      const detection = await faceapi
+        .detectSingleFace(videoRef.current)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detection) {
+        setStatus('ready'); // Reset to ready state
+        setMessage('No face detected - Please center your face and try again');
+        return;
+      }
+      console.log(detection.descriptor);
+      
+      const response = await axios.post("/api/participant/registerface", {
+        descriptor: Array.from(detection.descriptor),
+      });
+
+      if (response.status === 200) {
+        setMessage('Face registered successfully!');
+        window.location.reload();
+      }
+    } catch (err) {
+      console.log(err);
+      setStatus('ready'); // Reset to ready state on error
+      setMessage('Registration failed - Please try again');
+    } finally {
+      setStatus('ready'); // Always reset to ready state after attempt
     }
-
-    const newFace: Float32Array = detections[0].descriptor;
-    const data = Array.from(newFace);
-    axios.post("/api/participant/registerface", data).then(res => { console.log(res) }).catch(err => console.log(err));
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-
   return (
-    <div className="">
-      <div className='relative' >
-        <video ref={videoRef} className="max-w-2xl" autoPlay muted playsInline />
-        <canvas ref={canvasRef} className="absolute top-0 left-0" width="280" height="720" />
-        <Button variant="outline" className='z-100 relative bg-sky-400 hover:bg-sky-600' onClick={handleRegister}>Register Face</Button>
+    <div className="face-register-container">
+      <div className="video-wrapper">
+        <video 
+          ref={videoRef} 
+          autoPlay 
+          muted 
+          playsInline 
+          className="mirror-mode"
+          style={{ transform: 'scaleX(-1)' }} // Added inline mirror flip
+        />
+        <canvas 
+          ref={canvasRef}
+          className="overlay-canvas"
+          style={{ transform: 'scaleX(-1)' }} // Mirror canvas to match video
+        />
+        
+        <div className="instruction-box">
+          <p>{message}</p>
+          <button 
+            onClick={handleRegister}
+            disabled={status === 'registering'} // Only disable during registration
+            className={`register-btn ${status === 'ready' ? 'active' : ''}`}
+          >
+            {status === 'registering' ? 'Processing...' : 'Register Face'}
+          </button>
+        </div>
       </div>
     </div>
   );
