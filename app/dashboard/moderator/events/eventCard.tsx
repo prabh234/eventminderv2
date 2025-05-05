@@ -1,75 +1,130 @@
 "use client"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import axios from "axios";
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { BiDotsVerticalRounded } from "react-icons/bi";
-export default function EventCratedCards(){
+import { BiDotsVerticalRounded, BiSearch } from "react-icons/bi";
+
+export default function EventCreatedCards() {
     interface Event {
         id: string;
         eventname: string;
         description: string;
-        startdt:string;
-        enddt:string;
+        startdt: string;
+        enddt: string;
     }
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    const [events, setEvents] = useState<Event[]>([])
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const GetEvents = useCallback(async () => {
-        try{
-        const events = await axios.post("/api/moderator/event");
-            setEvents(events.data.res);
-        } catch(err){
-            console.log(err);
+        try {
+            const response = await axios.post("/api/moderator/event");
+            setEvents(response.data.res);
+        } catch (err) {
+            console.error(err);
         }
     }, []);
 
     useEffect(() => {
         GetEvents();
     }, [GetEvents]);
-    return(
 
-        <div className="grid grid-cols-1 md:grid-cols-3  lg:grid-cols-4 py-10">
+    // Sort events by start date (newest first)
+    const sortedEvents = [...events].sort((a, b) => 
+        new Date(b.startdt).getTime() - new Date(a.startdt).getTime()
+    );
 
-            {events.length > 0 ? events.map((event,idx)=>{
-                return(
-                    <div
-                        key={idx}
-                        className="relative group  block p-2 h-full w-full"
-                        onMouseEnter={() => setHoveredIndex(idx)}
-                        onMouseLeave={() => setHoveredIndex(null)}>
-                    <AnimatePresence>
-                        {hoveredIndex === idx && (
-                          <motion.span
-                            className="absolute inset-0 h-full w-full bg-cyan-400/35 dark:bg-gradient-to-bl from-sky-900/80 to-sky-800 block  rounded-3xl"
-                            layoutId="hoverBackground"
-                            initial={{ opacity: 0 }}
-                            animate={{
-                                opacity: 1,
-                                transition: { duration: 0.15 },
-                            }}
-                            exit={{
-                                opacity: 0,
-                                transition: { duration: 0.15, delay: 0.2 },
-                            }}
-                        />
-                        )}
-                    </AnimatePresence>
-                    <Card className="w-80 rounded-2xl border border-transparent flex flex-col justify-between dark:bg-gradient-to-br from-sky-700 to-cyan-900/65 h-full p-4 overflow-hidden relative z-20" key={event.id}>
-                        <CardHeader className="text-4xl">{event.eventname}</CardHeader>
-                        <CardContent>{event.description.length > 100 ? event.description.slice(0,100) + "..." : event.description}</CardContent>
-                        <CardFooter className="flex justify-end items-center">
-                            <Link className="flex gap-1 items-center bg-sky-600 hover:bg-sky-500 pl-3 pr-2 rounded-md py-1" href={`/dashboard/moderator/events/${event.id}`}>Edit<BiDotsVerticalRounded/></Link>
-                        </CardFooter>
-                    </Card>
-                    </div>
-                )
-            }):(
-                <div className="">
-                    <h1 className="">No Events Created yet</h1>
+    // Filter events based on search query
+    const filteredEvents = sortedEvents.filter(event =>
+        event.eventname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return (
+        <div className="p-4 md:p-6">
+            {/* Search Bar */}
+            <div className="mb-8 max-w-md mx-auto">
+                <div className="relative">
+                    <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-sky-500" />
+                    <input
+                        type="text"
+                        placeholder="Search events..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-sky-800 bg-white dark:bg-sky-950 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-600"
+                    />
                 </div>
-            )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredEvents.length > 0 ? filteredEvents.map((event, idx) => (
+                    <div
+                        key={event.id}
+                        className="relative group block h-full w-full"
+                        onMouseEnter={() => setHoveredIndex(idx)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                        <AnimatePresence>
+                            {hoveredIndex === idx && (
+                                <motion.span
+                                    className="absolute inset-0 h-full w-full bg-sky-100/40 dark:bg-sky-900/30 block rounded-xl"
+                                    layoutId="hoverBackground"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <Card className="h-full border border-gray-200 dark:border-sky-900/50 rounded-xl bg-white dark:bg-gradient-to-br from-sky-900/80 to-sky-900 transition-all hover:shadow-lg hover:-translate-y-1">
+                                <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-xl font-semibold text-sky-900 dark:text-sky-200 line-clamp-1">
+                                            {event.eventname}
+                                        </h3>
+                                    </div>
+                                </CardHeader>
+
+                                <CardContent className="pb-4">
+                                    <p className="text-gray-600 dark:text-sky-300 line-clamp-3 text-sm">
+                                        {event.description}
+                                    </p>
+                                </CardContent>
+
+                                <CardFooter className="pt-4 border-t border-gray-100 dark:border-sky-900/50">
+                                    <Link 
+                                        href={`/dashboard/moderator/events/${event.id}`}
+                                        className="w-full flex items-center justify-center gap-2 text-sm font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200 px-4 py-2 rounded-md hover:bg-sky-50/50 dark:hover:bg-sky-900/50 transition-colors"
+                                    >
+                                        Manage Event
+                                        <BiDotsVerticalRounded className="h-4 w-4" />
+                                    </Link>
+                                </CardFooter>
+                            </Card>
+                        </motion.div>
+                    </div>
+                )) : (
+                    <div className="col-span-full text-center py-12">
+                        <h2 className="text-2xl font-medium text-gray-500 dark:text-sky-400">
+                            {events.length === 0 ? "No events created yet" : "No matching events found"}
+                        </h2>
+                        <p className="text-gray-400 dark:text-sky-500 mt-2">
+                            {events.length === 0 
+                                ? "Create your first event to get started" 
+                                : "Try adjusting your search terms"}
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
-        )
+    );
 }

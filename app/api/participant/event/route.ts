@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async ()=>{
     try {
-        const res = await MyPrisma.event.findMany()
+        const res = await MyPrisma.event.findMany({
+            where:{
+                status:false
+            }
+        })
         return NextResponse.json({res},{status:200,statusText:"Event Dilivered"})
     } catch (error) {
         return NextResponse.json({error},{status:500,statusText:"Something went wrong, Try againnp"})

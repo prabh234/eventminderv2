@@ -18,7 +18,7 @@ interface Face {
   }
 }
 
-const FaceAndQrRecognizer = ({ eventid }: { eventid: string }) => {
+const FaceAndQrRecognizer = ({ eventid,onAttendanceMarked  }: { eventid: string,onAttendanceMarked: () => void }) => {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -233,6 +233,7 @@ useEffect(() => {
           });
           
           setProcessedIds(prev => new Set([...prev, matchedAttendee.attendee.id]));
+          onAttendanceMarked()
           toast.success(`Attendance marked for ${faceResult.name}`);
           setFaceResult(null);
         } catch (error) {
@@ -244,7 +245,7 @@ useEffect(() => {
   };
 
   handleFaceMatch();
-}, [faceResult, attendees, eventid, processedIds]);
+}, [faceResult, attendees, eventid, processedIds,onAttendanceMarked]);
 
 // Add this useEffect for handling QR code matches
 useEffect(() => {
@@ -264,6 +265,7 @@ useEffect(() => {
           
           setProcessedIds(prev => new Set([...prev, matchedAttendee.attendee.id]));
           toast.success(`Attendance marked for ${matchedAttendee.attendee.fname}`);
+          onAttendanceMarked();
           setQrContent(null);
         } catch (error) {
           console.error('Error updating attendance:', error);
@@ -274,7 +276,7 @@ useEffect(() => {
   };
 
   handleQrMatch();
-}, [qrContent, attendees, eventid, processedIds]);
+}, [qrContent, attendees, eventid, processedIds,onAttendanceMarked]);
 
 
 

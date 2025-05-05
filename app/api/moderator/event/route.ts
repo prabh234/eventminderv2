@@ -39,6 +39,7 @@ export const POST = async (req:NextRequest)=>{
         const res = await MyPrisma.event.findMany({
             where: {
                 hostId:token?.id,
+                status:false
             },
             select:{
                 id:true,
@@ -55,3 +56,21 @@ export const POST = async (req:NextRequest)=>{
         
     }
 }
+
+// Placeholder for PUT implementation
+export const PUT = async (req: NextRequest) => {
+    const data = await req.nextUrl.searchParams.get("eventid")
+    console.log(data);
+    try {
+        const res = await MyPrisma.event.update({
+            where:{
+                id: data || undefined
+            },data :{
+                status:{set:true}
+            }
+        })
+    return NextResponse.json({ res }, { status: 200 });
+    } catch (error) {
+    return NextResponse.json({ message: error }, { status: 500 });
+    }
+};

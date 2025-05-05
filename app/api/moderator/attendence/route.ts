@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET =async (req:NextRequest) => {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id')?.toString();
-    console.log(id);
     try {
         const res = await MyPrisma.enrollment.findMany({
             where:{
@@ -14,6 +13,7 @@ export const GET =async (req:NextRequest) => {
                 attendee:{
                     select:{
                         Face:true,
+                        email:true,
                         fname:true,
                         lname:true,
                         id:true,
@@ -22,8 +22,6 @@ export const GET =async (req:NextRequest) => {
             }
         })
         if (res.length > 0 ) {
-            console.log(res);
-            
             return NextResponse.json({res},{status:200})
         } else {
             return NextResponse.json({Message:"No One participated"},{status:300})

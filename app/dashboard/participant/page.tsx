@@ -10,108 +10,147 @@ import {
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
-import { CardDashboardParticipant } from '@/components/ui/my-components/dashboard-cards';
+// import { CardDashboardParticipant } from '@/components/ui/my-components/dashboard-cards';
 import QrGenerate from '@/components/ui/my-components/qrgenerate';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import Loading from "@/components/assets/loading";
 
-// const guide = [
-//   {no:1, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-//   {no:2, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-//   {no:3, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-//   {no:4, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-//   {no:5, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-//   {no:6, heading:"Lightning check", sub:"Ensure even lighting without shadows"},
-// ]
+const GuideItem = ({ number, title, children }: { number: number; title: string; children: React.ReactNode }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex items-start gap-4 p-4 rounded-xl dark:bg-sky-900/50 bg-sky-100/50 backdrop-blur-sm"
+  >
+    <div className="flex-shrink-0 w-8 h-8 dark:bg-sky-600 bg-sky-500 text-white rounded-full flex items-center justify-center font-bold">
+      {number}
+    </div>
+    <div className="space-y-2">
+      <h3 className="text-lg font-semibold dark:text-sky-300 text-sky-700">{title}</h3>
+      <div className="space-y-1 text-sm dark:text-sky-100/80 text-sky-800">
+        {children}
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function ParticipantDashboard() {
-  const{data:session} =  useSession();
-  const [FaceRegistered,setFace] = useState(true)
-  if(!session) console.log("no sesion");
-  const IsFaceRegistered = async ()=>{
-      axios.get('/api/participant/registerface').then(res=>setFace(res.data.FaceRegistered)).catch((e)=>console.log(e))
+  const { data: session } = useSession();
+  const [faceRegistered, setFaceRegistered] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkFaceRegistration = async () => {
+    try {
+      const res = await axios.get('/api/participant/registerface');
+      setFaceRegistered(res.data.FaceRegistered);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
   useEffect(() => {
-    IsFaceRegistered()
-  }, []);
+    if (session) checkFaceRegistration();
+  }, [session]);
+  if (isLoading || !session) return <Loading/>
+
   return (
-    <>
-    {session && <>
-      {FaceRegistered ? <div className="flex flex-col flex-1 space-y-5">
-        <CardDashboardParticipant/>
-        <div className="flex-1 flex justify-center">
-          <div className="dark:bg-sky-800 bg-sky-400 w-[340px] p-5 flex flex-col items-center justify-center rounded-2xl shadow-xl">
-            <QrGenerate size={300} id={session.user.id}/>
-            <h1 className="text-xl font-semibold mt-2 dark:text-cyan-300 text-cyan-800">Name: {session.user.name}</h1>
-            <p className="text-md text-white text-justify">This QR can be used for marking attendence in events</p>
-          </div>
-        </div>
-      </div> : <div className='flex flex-1 flex-col px-10 items-center justify-center'>
-        <div className="top-5 right-5 w-full dark:bg-sky-950/95 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl">
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-yellow-400 text-center">📸 Face Registration Guide</h3>
-        <h1 className={`dark:text-red-400 text-red-600  text-center`}>The participant must register his/her face in order to Participate in events</h1>
-        
-        <div className="space-y-3">
-          <div className={`flex items-start gap-3`}>
-            <div className="flex-shrink-0 w-6 h-6 dark:bg-blue-600 bg-blue-600 text-white rounded-full flex items-center justify-center">1</div>
-            <div>
-              <p className="text-lg font-medium dark:text-sky-400 text-blue-900">Lighting Check</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Ensure even lighting without shadows</p>
+    <main className="container mx-auto p-4 md:p-6 lg:p-8">
+      {faceRegistered ? (
+        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="dark:bg-gradient-to-br from-sky-900 to-sky-800 bg-sky-100 p-6 rounded-2xl shadow-lg"
+          >
+            <div className="flex flex-col items-center gap-6">
+              <QrGenerate size={280} id={session.user.id} />
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold dark:text-sky-100 text-sky-800">
+                  {session.user.name}
+                </h2>
+                <p className="dark:text-sky-300 text-sky-600 text-sm max-w-prose">
+                  Use this QR code for attendance verification at event check-ins
+                </p>
+              </div>
             </div>
-          </div>
+          </motion.div>
+        </div>
+      ) : (
+        <div className="max-w-3xl mx-auto space-y-8">
+          <motion.header 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-4"
+          >
+            <h1 className="text-3xl font-bold dark:text-sky-200 text-sky-800">
+              Face Registration Required
+            </h1>
+            <p className="dark:text-rose-300 text-rose-600 font-medium">
+              Complete face registration to participate in events
+            </p>
+          </motion.header>
 
-          <div className={`flex items-start gap-3`}>
-            <div className="flex-shrink-0 w-6 h-6 dark:bg-blue-600 bg-blue-600 text-white rounded-full flex items-center justify-center">2</div>
-            <div>
-              <p className="text-lg font-medium dark:text-sky-400 text-blue-900">Positioning</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Center your face in the frame</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Keep shoulders visible</p>
-            </div>
-          </div>
+          <div className="space-y-6">
+            <GuideItem number={1} title="Lighting & Positioning">
+              <>
+                <p>• Ensure even lighting without shadows</p>
+                <p>• Face the camera directly</p>
+                <p>• Keep shoulders visible</p>
+              </>
+            </GuideItem>
 
-          <div className={`flex items-start gap-3`}>
-            <div className="flex-shrink-0 w-6 h-6 dark:bg-blue-600 bg-blue-600 text-white rounded-full flex items-center justify-center">3</div>
-            <div>
-              <p className="text-lg font-medium dark:text-sky-400 text-blue-900">Preparation</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Remove hats & glasses</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Neutral expression please</p>
-            </div>
-          </div>
-          <div className={`flex items-start gap-3`}>
-            <div className="flex-shrink-0 w-6 h-6 dark:bg-blue-600 bg-blue-600 text-white rounded-full flex items-center justify-center">4</div>
-            <div>
-              <p className="text-lg font-medium dark:text-sky-400 text-blue-900">Recognition Guide</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Wait for a blue box to appear for scanning the face</p>
-              <p className="text-sm dark:text-gray-200 text-gray-600">Registration might be slow so do not press register button multiple times</p>
-            </div>
-          </div>
+            <GuideItem number={2} title="Preparation">
+              <>
+                <p>• Remove hats & glasses</p>
+                <p>• Maintain neutral expression</p>
+                <p>• Avoid face coverings</p>
+              </>
+            </GuideItem>
 
-          <div className={`flex flex-1 items-center justify-center gap-3`}>
-        <AlertDialog>
-          <BackgroundGradient className="w-60" containerClassName="max-w-fit">
-            <AlertDialogTrigger className="dark:bg-sky-900 bg-slate-100 w-full hover:dark:bg-sky-950 hover:bg-sky-600 px-3 py-2 rounded-full">Register Face</AlertDialogTrigger>
-          </BackgroundGradient>
-          <AlertDialogContent className='bg-rose-500 dark:bg-rose-500 min-w-fit flex items-center flex-col '>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-center" >Register Your Face</AlertDialogTitle>
-                <FaceRegister/>
-            </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="dark:bg-sky-800 bg-sky-400 dark:hover:bg-sky-600 hover:bg-sky-600" >Go Back</AlertDialogCancel>
-                </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <GuideItem number={3} title="Registration Process">
+              <>
+                <p>• Wait for blue detection frame</p>
+                <p>• Hold still during scanning</p>
+                <p>• Process may take 10-15 seconds</p>
+              </>
+            </GuideItem>
+
+            <motion.div 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              className="flex justify-center"
+            >
+              <AlertDialog>
+                <BackgroundGradient containerClassName="rounded-full">
+                  <AlertDialogTrigger className="px-8 py-3 dark:bg-sky-800 bg-white dark:text-sky-100 text-sky-800 rounded-full font-semibold hover:dark:bg-sky-700 hover:bg-sky-50 transition-colors duration-200">
+                    Begin Registration
+                  </AlertDialogTrigger>
+                </BackgroundGradient>
+                
+                <AlertDialogContent className="dark:bg-sky-900 bg-white max-w-md rounded-2xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-center text-xl dark:text-sky-200 text-sky-800">
+                      Face Registration
+                    </AlertDialogTitle>
+                  </AlertDialogHeader>
+                  
+                  <FaceRegister />
+                  
+                  <AlertDialogFooter className="sm:justify-center">
+                    <AlertDialogCancel className="dark:bg-sky-800 dark:hover:bg-sky-700 bg-sky-100 hover:bg-sky-200 dark:text-sky-200 text-sky-800">
+                      Cancel
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </motion.div>
           </div>
         </div>
-        </div>
-
-        </div>
-        </div>
-        }
-    </> }
-    </>
-    
-  )
+      )}
+    </main>
+  );
 }

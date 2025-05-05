@@ -53,6 +53,7 @@ model Event {
   enddt       String
   hostId      String
   status      Boolean      @default(false)
+  Certificatestatus      Boolean      @default(false)
   enrollments Enrollment[]
   host        Moderator    @relation(fields: [hostId], references: [id])
 }

@@ -21,106 +21,148 @@ interface EventResponse {
 }
 
 export default function Event({ params }: { params: Promise<{ event: string }> }) {
-    const [eventid, setEventId] = useState<string | null>(null);
-    const [CurrentEvent, setEvent] = useState<EventResponse | null>(null);
-    const [date,setdate] = useState("");
-    const router = useRouter();
-    useEffect(() => {
-        async function unwrapParams() {
-            const resolvedParams = await params;
-            setEventId(resolvedParams.event);
-        }
-        unwrapParams();
-    }, [params]);
+  const [eventId, setEventId] = useState<string | null>(null);
+  const [CurrentEvent, setEvent] = useState<EventResponse | null>(null);
+  const [dateStatus, setDateStatus] = useState<"today" | "future" | "past">("future");
+  const router = useRouter();
 
-    const EventData = useCallback(async () => {
-        if (!eventid) return;
-        try {
-            const res = await axios.get('/api/moderator/event', { params: { eventid } });
-            setEvent(res.data);
-            const start = new Date(res.data.startdt);
-            const today = new Date();
-            const eventDate = today.toDateString() === start.toDateString()
-            const futureDate = today.toDateString() < start.toDateString()
-            const pastDate = today.toDateString() > start.toDateString()
-            if (eventDate) {
-                setdate("today")
-            } else if (futureDate) {
-                setdate("future")
-            } else if (pastDate) {
-                setdate("past")
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }, [eventid]);
-
-    useEffect(() => {
-        EventData();
-    }, [EventData]);
-
-    const Startdate = new Date(CurrentEvent?.startdt || "");
-    const Enddate = new Date(CurrentEvent?.enddt || "");
-    
-    const StartDate = Startdate.toLocaleString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "2-digit",
-    });
-    const EndDate = Enddate.toLocaleString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "2-digit",
-    });
-
-    async function handleDelete(){
-        await axios.post('/api/moderator/event/delete', { eventid: eventid });
-        toast.success("Event Deleted", {
-            description: "Event Deleted Successfully",
-        });
-        setTimeout(() => {
-            window.location.href = "/dashboard/moderator/events";
-        }, 2000);
-
+  // Unwrap params using useEffect
+  useEffect(() => {
+    async function unwrapParams() {
+      const resolvedParams = await params;
+      setEventId(resolvedParams.event);
     }
-    function handleStart(){
-        toast.success(date);
-        if (date === "today"){
-            router.push(`/dashboard/moderator/events/${eventid}/start`);
-        } else{
-            toast.error("Event cannot be started", {
-                description: "Event can only be started on the date selected",
-            });
-        }
+    unwrapParams();
+  }, [params]);
+
+  const getAdjustedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  };
+
+  const EventData = useCallback(async () => {
+    if (!eventId) return;
+
+    try {
+      const res = await axios.get('/api/moderator/event', { params: { eventid: eventId } });
+      setEvent(res.data);
+
+      const today = new Date();
+      const startDate = getAdjustedDate(res.data.startdt);
+      const todayDate = getAdjustedDate(today.toISOString());
+
+      if (startDate.getTime() === todayDate.getTime()) {
+        setDateStatus("today");
+      } else if (startDate > todayDate) {
+        setDateStatus("future");
+      } else {
+        setDateStatus("past");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load event data");
     }
+  }, [eventId]);
 
-    return (
-        <div className="flex bg-cyan-100 dark:bg-cyan-950 flex-col p-5  rounded-2xl shadow-lg h-[80vh] m-10">
-                {date === "today" ? <></>:date === "future" ?<p className="text-yellow-500 text-center text-sm">[ Note : This event is yet to start, you can only start on the date selected]</p> : <p className="text-red-500 text-center text-sm">[ Note : This event Date has already passed either edit event or delete event ]</p>}
-                <h1 className="text-5xl text-center font-semibold">{CurrentEvent?.eventname}</h1>
-            <div className="flex flex-1 flex-col">
-                <p className="text-lg">{CurrentEvent?.description}</p>
-            </div>
+  useEffect(() => {
+    EventData();
+  }, [EventData]);
 
-            <div className="flex justify-between items-baseline">
-                <div className="flex gap-1 flex-col">
-                    <p className="text-sm">Start Date: {StartDate}</p>
-                    <p className="text-sm">End Date: {EndDate}</p>
-                    <p className="">Host: {CurrentEvent?.host.fname + " " + CurrentEvent?.host.lname}</p>
-                </div>
-                <div className="flex gap-3 items-baseline">
-                    <Button variant="outline" className="bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500" onClick={() => window.location.href = `/dashboard/moderator/events/${eventid}/edit`}>
-                        Edit Event
-                    </Button>
-                    <Button variant="outline" className="bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:text-white dark:hover:bg-red-500" onClick={() => handleDelete()}>
-                        Delete Event
-                    </Button>
-                    <Button variant="outline" className="bg-emerald-500 text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-500" onClick={() =>handleStart()}>
-                        Start Event
-                    </Button>
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
-                </div>
-            </div>
+  async function handleDelete() {
+    try {
+      await axios.post('/api/moderator/event/delete', { eventid: eventId });
+      toast.success("Event Deleted Successfully");
+      router.push("/dashboard/moderator/events");
+    } catch (err) {
+      toast.error("Failed to delete event");
+      console.error(err);
+    }
+  }
+
+  function handleStart() {
+    if (dateStatus === "today") {
+      router.push(`/dashboard/moderator/events/${eventId}/start`);
+    } else {
+      toast.error("Event cannot be started", {
+        description: dateStatus === "future"
+          ? "Event can only be started on the start date"
+          : "This event date has already passed",
+      });
+    }
+  }
+
+  return (
+    <div className="flex flex-col bg-gray-50 dark:bg-gray-900 p-6 rounded-xl shadow-sm min-h-[80vh] m-4 lg:m-8 gap-6">
+      <div className="space-y-2">
+        {dateStatus !== "today" && (
+          <p className={`text-center text-sm px-4 py-2 rounded-lg ${
+            dateStatus === "future"
+              ? "bg-amber-100/50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
+              : "bg-rose-100/50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300"
+          }`}>
+            {dateStatus === "future"
+              ? "Note: This event is yet to start - you can only start it on the selected date"
+              : "Note: This event date has passed - edit or delete the event"}
+          </p>
+        )}
+        <h1 className="text-4xl lg:text-5xl font-bold text-center text-gray-900 dark:text-gray-100">
+          {CurrentEvent?.eventname}
+        </h1>
+      </div>
+
+      <div className="flex-1 space-y-6">
+        <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+          {CurrentEvent?.description}
+        </p>
+
+        <div className="space-y-2 text-gray-700 dark:text-gray-300">
+          <p className="text-sm">
+            <span className="font-medium">Start:</span> {formatDate(CurrentEvent?.startdt || "")}
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">End:</span> {formatDate(CurrentEvent?.enddt || "")}
+          </p>
+          <p>
+            <span className="font-medium">Host:</span> {CurrentEvent?.host.fname} {CurrentEvent?.host.lname}
+          </p>
         </div>
-    );
+      </div>
+
+      <div className="flex flex-col lg:flex-row justify-between gap-4 lg:items-center">
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => router.push(`/dashboard/moderator/events/${eventId}/edit`)}
+            variant="outline"
+            className="bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          >
+            Edit Event
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="outline"
+            className="text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600"
+          >
+            Delete Event
+          </Button>
+        </div>
+
+        <Button
+          onClick={handleStart}
+          disabled={dateStatus !== "today"}
+          className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Start Event
+        </Button>
+      </div>
+    </div>
+  );
 }

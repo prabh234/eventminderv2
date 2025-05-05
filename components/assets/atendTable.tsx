@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,7 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, CheckCircle2 } from "lucide-react"
+import { ArrowUpDown, CheckCircle2, Search, Settings2 } from "lucide-react"
+import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,10 +21,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
@@ -35,60 +32,39 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import axios from "axios"
+import clsx from "clsx"
+import { ScrollArea } from "../ui/scroll-area"
 
 // Updated data type for attendance
 export type Attendance = {
   id: string
-  name: string
-  email: string
   status: boolean
+  attendee:{
+    fname:string,
+    lname:string,
+    email:string,
+  }
 }
-
-const data: Attendance[] = [
-  {
-    id: "m5gr84i9",
-    name: "Ken Sanchez",
-    email: "ken99@example.com",
-    status: false,
-  },
-  {
-    id: "3u1reuv4",
-    name: "Abe Johnson",
-    email: "Abe45@example.com",
-    status: false,
-  },
-  {
-    id: "derv1ws0",
-    name: "Monserrat Smith",
-    email: "Monserrat44@example.com",
-    status: false,
-  },
-]
-
+// const att: Attendance[] = [
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"aman", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},},
+//   { id:"234", status:false, attendee:{ fname:"prabh", lname:"singh", email:"singh@gmail.com"},}
+// ]
 export const columns: ColumnDef<Attendance>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        disabled={row.original.status} // Disable selection if attendance marked
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "status",
     header: "Present",
@@ -110,6 +86,7 @@ export const columns: ColumnDef<Attendance>[] = [
   },
   {
     accessorKey: "name",
+    accessorFn: (row) => `${row.attendee.fname} ${row.attendee.lname}`,
     header: ({ column }) => {
       return (
         <Button
@@ -121,56 +98,43 @@ export const columns: ColumnDef<Attendance>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
+    cell: ({ row }) => <span className="font-medium"> {row.original.attendee.fname} {row.original.attendee.lname}</span>,
   },
   {
-    accessorKey: "email",
+    accessorKey: "attendee.email",
     header: "Email",
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const attendance = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0" disabled={attendance.status}>
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(attendance.id)}
-            >
-              Copy attendance ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem disabled={attendance.status}>
-              Mark as present
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={attendance.status}>
-              Add note
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ({ row }) => <div className="lowercase">{row.original.attendee.email}</div>,
   },
 ]
 
-export function AttendanceTable() {
+export function AttendanceTable({ eventid,refreshKey  }: { eventid: string,refreshKey :number }) {
+  // ... existing state and effects
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const [attendence,setAttendence] = React.useState<Attendance[]>([])
 
-  const table = useReactTable({
-    data,
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await axios.get(`/api/moderator/attendence?id=${eventid}`);
+        setAttendence(data.res);
+      } catch (error) {
+        console.error("Error fetching attendance:", error);
+      }
+    };
+    
+    fetchData();
+    
+    // Add polling for additional real-time updates
+    const interval = setInterval(fetchData, 10000); // Refresh every 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [eventid, refreshKey]); // Add refreshKey to dependency array
+
+  const table = useReactTable<Attendance>({
+    data: attendence,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -188,113 +152,131 @@ export function AttendanceTable() {
     },
   })
 
+
+
   return (
-    <div className="w-full flex-1">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter names or emails..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => {
-            const value = event.target.value
-            table.getColumn("name")?.setFilterValue(value)
-            table.getColumn("email")?.setFilterValue(value)
-          }}
-          className="max-w-sm"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) =>
-                    column.toggleVisibility(!!value)
-                  }
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
+    <div className="w-full flex-1 space-y-6">
+      <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
+          <div className="relative max-w-sm w-full">
+            <Input
+              placeholder="Search attendees..."
+              value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+              onChange={(event) => {
+                const value = event.target.value
+                table.getColumn("name")?.setFilterValue(value)
+                table.getColumn("attendee.email")?.setFilterValue(value)
+              }}
+              className="w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="rounded-full gap-2">
+                <Settings2 className="h-4 w-4" />
+                <span>Columns</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end"
+              className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            >
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {column.id.replace('attendee.', '')}
+                  </DropdownMenuCheckboxItem>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={row.original.status ? "bg-green-50 hover:bg-green-50" : ""}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="rounded-lg shadow-sm overflow-hidden mt-6">
+              <div className="flex items-center gap-2 p-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+              <span className="text-sm text-muted-foreground">
+                Live updates enabled
+              </span>
+            </div>
+            <ScrollArea className="h-[calc(87vh-300px)] rounded-md border">
+          <Table className="border-collapse">
+            <TableHeader className="[&_tr]:border-b-0">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow 
+                  key={headerGroup.id} 
+                  className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border-b"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead 
+                      key={header.id}
+                      className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                    >
                       {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                        header.column.columnDef.header,
+                        header.getContext()
                       )}
-                    </TableCell>
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No attendees found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className={clsx(
+                      "transition-all duration-300",
+                      row.original.status 
+                        ? "bg-green-50/50 dark:bg-green-900/20 hover:bg-green-100/50 dark:hover:bg-green-900/30"
+                        : "hover:bg-muted/50",
+                      row.original.status && "animate-pulse-once" // Add this line
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell 
+                        key={cell.id}
+                        className="p-4 align-middle [&:has([role=checkbox])]:pr-0"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    No attendees found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          </ScrollArea>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{table.getFilteredRowModel().rows.length} total Participants</span>
+          </div>
         </div>
       </div>
     </div>

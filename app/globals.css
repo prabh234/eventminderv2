@@ -1,7 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+@layer base {
+  :root {
+    --color-gold: 212 175 55;
+  }
+  .border-gold {
+    border-color: rgb(var(--color-gold));
+  }
+}
 body {
   font-family: Arial, Helvetica, sans-serif;
   /* background-image: url("/cubes.png"); */
@@ -27,7 +34,21 @@ body {
   }
 }
 
+@keyframes pulse-once {
+  0% { background-color: rgba(220, 252, 231, 0.5); }
+  100% { background-color: rgba(240, 253, 244, 0.3); }
+}
 
+.dark .animate-pulse-once {
+  @keyframes pulse-once {
+    0% { background-color: rgba(22, 101, 52, 0.3); }
+    100% { background-color: rgba(20, 83, 45, 0.2); }
+  }
+}
+
+.animate-pulse-once {
+  animation: pulse-once 1s ease-in-out;
+}
 .my-background-image {
   background-image: url("/inspiration-geometry.png");
 }
@@ -153,6 +174,25 @@ video {
 .register-btn:disabled {
   background: #666;
   cursor: not-allowed;
+}
+/* Smooth scrolling */
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: thin;
+}
+
+/* Custom scrollbar for webkit */
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
 }
 
 .recognizer-container {
