@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 // import { CardDashboardParticipant } from '@/components/ui/my-components/dashboard-cards';
+import Loading from "@/components/assets/loading";
 import QrGenerate from '@/components/ui/my-components/qrgenerate';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import Loading from "@/components/assets/loading";
 
 const GuideItem = ({ number, title, children }: { number: number; title: string; children: React.ReactNode }) => (
   <motion.div 
@@ -130,17 +130,14 @@ export default function ParticipantDashboard() {
                     Begin Registration
                   </AlertDialogTrigger>
                 </BackgroundGradient>
-                
                 <AlertDialogContent className="dark:bg-sky-900 bg-white max-w-md rounded-2xl">
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-center text-xl dark:text-sky-200 text-sky-800">
                       Face Registration
                     </AlertDialogTitle>
                   </AlertDialogHeader>
-                  
-                  <FaceRegister />
-                  
-                  <AlertDialogFooter className="sm:justify-center">
+                    <FaceRegister />
+                    <AlertDialogFooter className="sm:justify-center">
                     <AlertDialogCancel className="dark:bg-sky-800 dark:hover:bg-sky-700 bg-sky-100 hover:bg-sky-200 dark:text-sky-200 text-sky-800">
                       Cancel
                     </AlertDialogCancel>
