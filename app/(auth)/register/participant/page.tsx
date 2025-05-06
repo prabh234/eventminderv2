@@ -7,7 +7,7 @@ export default function Host() {
 return (
   <div className="flex min-h-[80dvh]">
     <div className="flex flex-1 items-center justify-center border-r border-gray-500">
-      <Image src={"/pat.jpg"} alt="img" className="w-96 h-96" width={16} height={16} />
+      <Image src={"/participant2.gif"} unoptimized alt="img" className="w-96 h-96" width={16} height={16} />
     </div>
     <div className=" flex flex-1 relative flex-col h-[80vh] items-center  justify-center">
       <div className=" dark:bg-sky-950/90 dark:shadow-sky-800 overflow-hidden shadow-sky-500 bg-sky-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-4  shadow-2xl">

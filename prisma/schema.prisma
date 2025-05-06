@@ -16,14 +16,14 @@ model Participant {
   department      String?
   role            Role         @default(Participant)
   dateofbirth     DateTime
-  Face            Float[]
-  FaceRegistered Boolean @default(false)
   emailVerifToken String?      @db.VarChar(255)
   isVarified      Boolean      @default(false)
   profile_pic     String?
   resetExpire     DateTime?
   resetPassword   String?
   verifiedExpire  DateTime?
+  Face            Float[]
+  FaceRegistered  Boolean      @default(false)
   enrollments     Enrollment[]
 }
 
@@ -46,16 +46,16 @@ model Moderator {
 }
 
 model Event {
-  id          String       @id @unique @default(uuid())
-  eventname   String
-  description String
-  startdt     String
-  enddt       String
-  hostId      String
-  status      Boolean      @default(false)
-  Certificatestatus      Boolean      @default(false)
-  enrollments Enrollment[]
-  host        Moderator    @relation(fields: [hostId], references: [id])
+  id                String       @id @unique @default(uuid())
+  eventname         String
+  description       String
+  startdt           String
+  enddt             String
+  hostId            String
+  status            Boolean      @default(false)
+  Certificatestatus Boolean      @default(false)
+  enrollments       Enrollment[]
+  host              Moderator    @relation(fields: [hostId], references: [id])
 }
 
 model Enrollment {
