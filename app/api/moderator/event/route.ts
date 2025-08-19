@@ -59,12 +59,12 @@ export const POST = async (req:NextRequest)=>{
 
 // Placeholder for PUT implementation
 export const PUT = async (req: NextRequest) => {
-    const data = await req.nextUrl.searchParams.get("eventid")
-    console.log(data);
+    const eventid = req.nextUrl.searchParams.get("eventid");
+    console.log(eventid);
     try {
         const res = await MyPrisma.event.update({
             where:{
-                id: data || undefined
+                id: eventid || undefined
             },data :{
                 status:{set:true}
             }

@@ -18,6 +18,10 @@ interface Face {
   }
 }
 
+interface AttendeeApiResponse {
+  res: Face[];
+}
+
 const FaceAndQrRecognizer = ({ eventid,onAttendanceMarked  }: { eventid: string,onAttendanceMarked: () => void }) => {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,7 +47,7 @@ const FaceAndQrRecognizer = ({ eventid,onAttendanceMarked  }: { eventid: string,
           faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
           faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
         ]);
-        const { data } = await axios.get(`/api/moderator/attendence?id=${eventid}`);
+        const { data } = await axios.get<AttendeeApiResponse>(`/api/moderator/attendence?id=${eventid}`);
         setAttendees(data.res);
         const labeledDescriptors = data.res.map((face: Face) =>
           new faceapi.LabeledFaceDescriptors(
@@ -172,7 +176,11 @@ const FaceAndQrRecognizer = ({ eventid,onAttendanceMarked  }: { eventid: string,
           await new Promise(resolve => setTimeout(resolve, 500));
           await attemptInitialization();
         } else {
-          setError(err instanceof Error ? err.message : 'Camera access failed');
+          if (err instanceof DOMException && err.name === "NotAllowedError") {
+            setError("Camera access was denied. Please allow camera access to use this feature.");
+          } else {
+            setError(err instanceof Error ? err.message : 'Camera access failed');
+          }
         }
       }
     };
